@@ -1,5 +1,5 @@
 {
-  "name": "ts-lazy",
+  "name": "ts-memo",
   "version": "1.0.0",
   "description": "Elegant lazy computation utilities for TypeScript: remove branching in getters by using ValueProvider",
   "type": "module",
@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "publish": "npm run build"
+    "prepublish": "npm run build"
   },
   "files": ["dist"],
   "keywords": [

@@ -1,5 +1,5 @@
 /**
- * Elegant lazy computation utilities for TypeScript.
+ * Elegant memo computation utilities for TypeScript.
  *
  * Motivation:
  *   Avoid imperative if-branches to initialize fields on-demand. Instead of
@@ -44,13 +44,13 @@ class ComputableValue<T> implements ValueProvider<T> {
  * Create a lazily-computed ValueProvider from a getter function.
  *
  * Example usage inside a class:
- *   private _age = lazy(() => expensiveComputeAge());
+ *   private _age = memo(() => expensiveComputeAge());
  *   get age(): number {
  *     this._age = this._age.compute();
  *     return this._age.value;
  *   }
  */
-export function lazy<T>(getter: () => T): ValueProvider<T> {
+export function memo<T>(getter: () => T): ValueProvider<T> {
   return new ComputableValue(getter);
 }
 
