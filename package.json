@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"
   },
+  "files": ["dist"],
   "keywords": [
     "lazy",
     "typescript",
