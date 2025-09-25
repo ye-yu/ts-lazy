@@ -10,7 +10,8 @@
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "test": "vitest run",
     "test:watch": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "publish": "npm run build"
   },
   "files": ["dist"],
   "keywords": [
