@@ -12,18 +12,21 @@
  * Call compute once to obtain a stable provider that exposes the computed value.
  */
 export interface ValueProvider<T> {
-  /** Compute the value and return a provider that is guaranteed to be stable. */
-  compute(): ValueProvider<T>;
-  /** Access the computed value. Only safe on the stable provider. */
-  readonly value: T;
+    /** Compute the value and return a provider that is guaranteed to be stable. */
+    compute(): ValueProvider<T>;
+
+    /** Access the computed value. Only safe on the stable provider. */
+    readonly value: T;
 }
 
 /**
  * A stable provider that already holds the computed value.
  */
 class ComputedValue<T> implements ValueProvider<T> {
-  constructor(public readonly value: T) {}
-  compute = () => this;
+    constructor(public readonly value: T) {
+    }
+
+    compute = () => this;
 }
 
 /**
@@ -31,13 +34,16 @@ class ComputedValue<T> implements ValueProvider<T> {
  * Accessing `.value` prior to compute is a developer error and will throw.
  */
 class ComputableValue<T> implements ValueProvider<T> {
-  constructor(public readonly getter: () => T) {}
-  compute = () => new ComputedValue(this.getter());
-  get value(): T {
-    throw new Error(
-      "UnstableValue: Must call compute() and use the returned provider's .value"
-    );
-  }
+    constructor(public readonly getter: () => T) {
+    }
+
+    compute = () => new ComputedValue(this.getter());
+
+    get value(): T {
+        throw new Error(
+            "UnstableValue: Must call compute() and use the returned provider's .value"
+        );
+    }
 }
 
 /**
@@ -51,7 +57,41 @@ class ComputableValue<T> implements ValueProvider<T> {
  *   }
  */
 export function memo<T>(getter: () => T): ValueProvider<T> {
-  return new ComputableValue(getter);
+    return new ComputableValue(getter);
 }
 
-export type { ComputedValue, ComputableValue };
+const recomputeSymbol = Symbol.for("recompute");
+
+/**
+ * Property decorator that installs a lazy getter on first access and caches the value.
+ *
+ * Usage:
+ *   class Example {
+ *     @Memo(() => 42)
+ *     public readonly age!: number
+ *     // add !: to remove error from ts for uninitialized field
+ *   }
+ */
+export function Memo<T, Self = any>(factory: (self?: Self) => T): PropertyDecorator {
+    let value: T;
+    return (target: any, propertyKey: string | symbol) => {
+        Object.defineProperty(target, propertyKey, {
+            get: function () {
+                this[recomputeSymbol] ??= []
+                this[recomputeSymbol]!.push(() => value = factory(this))
+                value = factory(this)
+                Object.defineProperty(this, propertyKey, {
+                    value: value,
+                })
+                return value;
+            }
+        })
+    };
+}
+
+export function recomputeMemo<T extends object>(obj: T): T {
+    (obj as unknown as any)[recomputeSymbol]?.forEach((recompute: Function) => recompute())
+    return obj
+}
+
+export type {ComputedValue, ComputableValue};
